@@ -8,7 +8,6 @@
 <body>
 <script>
     async function fetchAndZip() {
-        // Parâmetros obtidos da URL
         const hashtags = new URLSearchParams(window.location.search).get('hashtags');
         const resultsLimit = new URLSearchParams(window.location.search).get('resultsLimit');
         const apiToken = new URLSearchParams(window.location.search).get('apiToken');
@@ -26,25 +25,22 @@
             const response = await fetch(apiUrl);
             const mediaList = await response.json();
 
-            // Sort mediaList by timestamp in descending order (assumindo que sua API retorna um campo 'timestamp')
-            mediaList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
             let counter = 1;
             for (const media of mediaList) {
-                // Aqui, você precisa ajustar dependendo de como sua API retorna a URL da mídia
-                const mediaUrl = media.url; // Ajuste baseado na estrutura de dados que sua API retorna
-                const response = await fetch(mediaUrl);
-                const blob = await response.blob();
-                // Você pode querer ajustar a forma de nomear os arquivos aqui
-                const extension = mediaUrl.split('?')[0].split('.').pop();
-                const filename = `media_${String(counter++).padStart(3, '0')}.${extension}`;
-                folder.file(filename, blob);
+                // Considerando que sua API pode retornar várias imagens por postagem
+                for (const imageUrl of media.images) {
+                    const imageResponse = await fetch(imageUrl);
+                    const blob = await imageResponse.blob();
+                    const extension = imageUrl.split('?')[0].split('.').pop();
+                    const filename = `media_${String(counter++).padStart(3, '0')}.${extension}`;
+                    folder.file(filename, blob);
+                }
             }
 
             const zipBlob = await zip.generateAsync({type: 'blob'});
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(zipBlob);
-            link.download = 'instabox.zip'; // Nome do arquivo ZIP pode ser ajustado conforme necessário
+            link.download = 'instabox.zip'; // O nome do arquivo ZIP pode ser personalizado conforme necessário
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

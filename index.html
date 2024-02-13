@@ -2,26 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Instagram Image Gallery</title>
-    <style>
-        .gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-        .gallery img {
-            max-width: 200px; /* Ajuste conforme necessário */
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-    </style>
+    <title>Instagram Image List</title>
 </head>
 <body>
-<div class="gallery"></div> <!-- Container da galeria -->
+<ul class="image-list"></ul> <!-- Container da lista de imagens -->
 
 <script>
-    async function fetchAndDisplayImages() {
+    async function fetchAndListImages() {
         const hashtags = new URLSearchParams(window.location.search).get('hashtags');
         const resultsLimit = new URLSearchParams(window.location.search).get('resultsLimit');
         const apiToken = new URLSearchParams(window.location.search).get('apiToken');
@@ -32,25 +19,28 @@
         }
 
         const apiUrl = `https://insta.ndoohr.com/index.php?hashtags=${encodeURIComponent(hashtags)}&resultsLimit=${encodeURIComponent(resultsLimit)}&apiToken=${encodeURIComponent(apiToken)}`;
-        const galleryContainer = document.querySelector('.gallery');
+        const listContainer = document.querySelector('.image-list');
 
         try {
             const response = await fetch(apiUrl);
             const mediaList = await response.json();
 
             mediaList.forEach(media => {
-                const imageUrl = media.displayUrl;
-                const imgElement = document.createElement('img');
-                imgElement.src = imageUrl;
-                imgElement.alt = "Instagram image";
-                galleryContainer.appendChild(imgElement);
+                const imageUrl = media.displayUrl; // Ajuste conforme a propriedade correta
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.textContent = imageUrl;
+                link.target = "_blank"; // Abrir em nova aba quando clicado
+                listItem.appendChild(link);
+                listContainer.appendChild(listItem);
             });
         } catch (error) {
-            console.error('Error fetching images:', error);
+            console.error('Error fetching image URLs:', error);
         }
     }
 
-    window.addEventListener('load', fetchAndDisplayImages);
+    window.addEventListener('load', fetchAndListImages);
 </script>
 </body>
 </html>

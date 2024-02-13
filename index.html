@@ -2,12 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Download Instagram Media as ZIP</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <title>Instagram Image Gallery</title>
+    <style>
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .gallery img {
+            max-width: 200px; /* Ajuste conforme necessário */
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
+<div class="gallery"></div> <!-- Container da galeria -->
+
 <script>
-    async function fetchAndZip() {
+    async function fetchAndDisplayImages() {
         const hashtags = new URLSearchParams(window.location.search).get('hashtags');
         const resultsLimit = new URLSearchParams(window.location.search).get('resultsLimit');
         const apiToken = new URLSearchParams(window.location.search).get('apiToken');
@@ -18,45 +32,25 @@
         }
 
         const apiUrl = `https://insta.ndoohr.com/index.php?hashtags=${encodeURIComponent(hashtags)}&resultsLimit=${encodeURIComponent(resultsLimit)}&apiToken=${encodeURIComponent(apiToken)}`;
-        const zip = new JSZip();
-        const folder = zip.folder('instabox');
+        const galleryContainer = document.querySelector('.gallery');
 
         try {
             const response = await fetch(apiUrl);
             const mediaList = await response.json();
 
-            let counter = 1;
-            for (const media of mediaList) {
-                // Usando displayUrl para obter a imagem
+            mediaList.forEach(media => {
                 const imageUrl = media.displayUrl;
-                try {
-                    const imageResponse = await fetch(imageUrl);
-                    const blob = await imageResponse.blob();
-                    if (blob.size > 0) {
-                        const extension = imageUrl.split('?')[0].split('.').pop();
-                        const filename = `media_${String(counter++).padStart(3, '0')}.${extension}`;
-                        folder.file(filename, blob);
-                    } else {
-                        console.error('Failed to download image:', imageUrl);
-                    }
-                } catch (imageError) {
-                    console.error('Error downloading image:', imageUrl, imageError);
-                }
-            }
-
-            const zipBlob = await zip.generateAsync({type: 'blob'});
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(zipBlob);
-            link.download = 'instabox.zip';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+                const imgElement = document.createElement('img');
+                imgElement.src = imageUrl;
+                imgElement.alt = "Instagram image";
+                galleryContainer.appendChild(imgElement);
+            });
         } catch (error) {
-            console.error('Error fetching or zipping the files:', error);
+            console.error('Error fetching images:', error);
         }
     }
 
-    window.addEventListener('load', fetchAndZip);
+    window.addEventListener('load', fetchAndDisplayImages);
 </script>
 </body>
 </html>

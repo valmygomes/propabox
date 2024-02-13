@@ -27,24 +27,30 @@
 
             let counter = 1;
             for (const media of mediaList) {
-                // Considerando que sua API pode retornar várias imagens por postagem
-                for (const imageUrl of media.images) {
+                // Usando displayUrl para obter a imagem
+                const imageUrl = media.displayUrl;
+                try {
                     const imageResponse = await fetch(imageUrl);
                     const blob = await imageResponse.blob();
-                    const extension = imageUrl.split('?')[0].split('.').pop();
-                    const filename = `media_${String(counter++).padStart(3, '0')}.${extension}`;
-                    folder.file(filename, blob);
+                    if (blob.size > 0) {
+                        const extension = imageUrl.split('?')[0].split('.').pop();
+                        const filename = `media_${String(counter++).padStart(3, '0')}.${extension}`;
+                        folder.file(filename, blob);
+                    } else {
+                        console.error('Failed to download image:', imageUrl);
+                    }
+                } catch (imageError) {
+                    console.error('Error downloading image:', imageUrl, imageError);
                 }
             }
 
             const zipBlob = await zip.generateAsync({type: 'blob'});
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(zipBlob);
-            link.download = 'instabox.zip'; // O nome do arquivo ZIP pode ser personalizado conforme necessário
+            link.download = 'instabox.zip';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-
         } catch (error) {
             console.error('Error fetching or zipping the files:', error);
         }

@@ -23,33 +23,24 @@
 
         try {
             const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`API call failed with status: ${response.status}`);
+            }
             const mediaList = await response.json();
 
+            console.log(mediaList); // Debugging
+
             mediaList.forEach(media => {
-                // Adiciona a URL de display principal
-                if (media.displayUrl) {
-                    addImageToList(media.displayUrl, listContainer);
-                }
-                // Se houver imagens adicionais, adiciona elas também
-                if (media.images && media.images.length > 0) {
-                    media.images.forEach(imageUrl => {
-                        addImageToList(imageUrl, listContainer);
-                    });
-                }
+                const imageUrl = media.displayUrl; // Assuming this is the correct path
+                const listItem = document.createElement('li');
+                const imageElement = document.createElement('img');
+                imageElement.src = imageUrl;
+                listItem.appendChild(imageElement);
+                listContainer.appendChild(listItem);
             });
         } catch (error) {
             console.error('Error fetching image URLs:', error);
         }
-    }
-
-    function addImageToList(imageUrl, listContainer) {
-        const listItem = document.createElement('li');
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.textContent = imageUrl;
-        link.target = "_blank"; // Abrir em nova aba quando clicado
-        listItem.appendChild(link);
-        listContainer.appendChild(listItem);
     }
 
     window.addEventListener('load', fetchAndListImages);
